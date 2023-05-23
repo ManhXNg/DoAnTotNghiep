@@ -1,0 +1,238 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    DateTime startDate = DateTime.Now.AddDays(-7);
+    DateTime endDate = DateTime.Now;
+    string startDateString = startDate.ToString("yyyy-MM-dd");
+    string endDateString = endDate.ToString("yyyy-MM-dd");
+}
+<style>
+
+</style>
+<main>
+    <div class="container-fluid px-4">
+        <h1 class="mt-4">Quản lý đơn hàng</h1>
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-md-8">
+                        <lable>
+                            Lọc trạng thái đơn hàng :
+                        </lable>
+                        <select id="filterSelect" class="form-select" aria-label="Default select example " style="width:200px">
+                            <option value="0">Tất cả</option>
+                            <option value="1">Đặt hàng</option>
+                            <option value="6">Xác nhận</option>
+                            <option value="2">Đang giao hàng</option>
+                            <option value="3">Thành công</option>
+                            <option value="4">Đã hủy</option>
+                            <option value="5">Không hoạt động</option>
+                        </select>
+                        <div class="row mb-3">
+
+
+                            <input class="form-control col-12 mt-2" style="width:12% !important ;margin-right:10px;" value="@startDateString"  type="date" id="date_start_o" />
+                            <input class="form-control col-12 mt-2" style="width:12% !important;margin-right:10px;" type="date" value="@endDateString" id="date_end_o" />
+                            <button class="btn btn-primary mt-2" style="width:5% !important;margin-right:10px;" id="btn-filterdate">Lọc</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+
+                <table class="table table-striped " id="tblOrder">
+                    <thead>
+                        <tr>
+                            <td>Mã hóa đơn</td>
+                            <td>Tên khách hàng</td>
+                            <td>Số điện thoại</td>
+                            <td>Ngày mua</td>
+                            <td>Tổng tiền </td>
+                            <td>Trạng thái </td>
+                            <th scope="col">Chức năng</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+<script>
+    $(document).ready(function () {
+
+
+
+        loadDataOrder();
+        $('#filterSelect').on('change', function () {
+
+            $('#tblOrder').dataTable().fnDestroy();
+            loadDataOrder();
+        });
+        $('#btn-filterdate').on('click', function () {
+
+            $('#tblOrder').dataTable().fnDestroy();
+            loadDataOrder();
+        });
+
+    });
+    function onDetailOrder(id) {
+
+        var url = '/Admin/Order/OrderDetail/' + id;
+        window.location.href = url;
+    }
+    function onCancelOrder(id) {
+
+        if (confirm("Bạn có chắc chắn muốn hủy đơn hàng")) {
+           
+            $.ajax({
+                url: '/Admin/Order/CancelOrder',
+                type: 'POST',
+                data: {
+                    orderId: id,
+                    
+
+                },
+                success: function (result) {
+                    $('#tblOrder').dataTable().fnDestroy();
+                    loadDataOrder();
+                    if (result != 1) {
+                        MessageError("Hủy  đơn hàng thất bại")
+                    }
+
+                },
+                error: function () {
+                    MessageError("Lỗi");
+                }
+            });
+        }
+    }
+    function UpdateStatus(selectId, orderId) {
+
+
+        var selectedValue = document.getElementById(selectId).value;
+        if (confirm("Bạn có chắc chắn muốn thay đổi trạng thái")) {
+           
+            $.ajax({
+                url: '/Admin/Order/UpdateStatusOrder',
+                type: 'POST',
+                data: {
+                    orderId: orderId,
+                    selectedId: selectedValue
+
+                },
+                success: function (result) {
+                    $('#tblOrder').dataTable().fnDestroy();
+                    loadDataOrder();
+                    if(result != 1) {
+                        MessageError("Update trạng thái đơn hàng thất bại")
+                    }  
+
+                },
+                error: function () {
+                    MessageError("Lỗi");
+                }
+            });
+        }
+
+    }
+
+    function loadDataOrder() {
+        let status = parseInt($('#filterSelect').val());
+        let datestart = $('#date_start_o').val();
+        let dateend = $('#date_end_o').val();
+        if (datestart > dateend) {
+            MessageError("Ngày bắt đầu phải nhỏ hơn ngày kết thúc");
+            return
+        }
+        var table = $('#tblOrder').DataTable({
+
+            "ajax": {
+                "url": "/Admin/Order/GetListOrder",
+                "type": "GET",
+                "data": {
+                    stt: status,
+                    datestart: datestart,
+                    dateend: dateend
+
+                },
+                "dataType": "json",
+                "dataSrc": ""
+            },
+            "order": [[0, "desc"]],
+            "columns": [
+                { "data": "orderId" },
+                { "data": "customerName" },
+                { "data": "phone" },
+                {
+                    "data": "orderDate", "render": function (data, type, row) {
+                        var orderDate = new Date(data);
+                        var formattedDate = ('0' + orderDate.getDate()).slice(-2) + '/' + ('0' + (orderDate.getMonth() + 1)).slice(-2) + '/' + orderDate.getFullYear() + ' ' + ('0' + orderDate.getHours()).slice(-2) + ':' + ('0' + orderDate.getMinutes()).slice(-2) + ':' + ('0' + orderDate.getSeconds()).slice(-2);
+                        return formattedDate;
+                    }
+                },
+                {
+                    "data": "total", "render": function (data, type, row) {
+                        return formatVND(data);
+                    }
+                },
+                {
+                    "data": null, "render": function (data, type, row) {
+                        var status = row.status;
+                        var options = `<select  id="status-select-${row.orderId}" style="width:149px " >`;
+                        if (status === 1) {
+                            options += '<option value="1" selected>Đặt hàng</option>' +
+                                '<option value="6">Xác nhận</option>' +
+                             '<option value="4">Đã hủy</option>';
+                        } else if (status === 2) {
+                            options += 
+                                '<option value="2" selected>Đang giao hàng</option>' +
+                                '<option value="3">Thành công</option>' ;
+                                
+                        } else if (status === 3) {
+                            options += 
+                                '<option value="3" selected>Thành công</option>' ;
+                            
+                        } else if (status === 4) {
+                            options += 
+                                '<option value="4" selected>Đã hủy</option>';
+                        } else if (status === 5) {
+                            options += '<option value="1">Đặt hàng</option>' +
+                                '<option value="6">Xác nhận</option>' +
+                                '<option value="2">Đang giao hàng</option>' +
+                                '<option value="3">Thành công</option>' +
+                                '<option value="4" >Đã hủy</option>' +
+                                '<option value="5" selected >Không hoạt động</option>';
+                        }else{
+                            options += 
+                                '<option value="6" selected>Xác nhận</option>' +
+                                '<option value="2">Đang giao hàng</option>';
+                        }
+                        options += '</select>';
+                        options += `<button class="btn btn-sm btn-primary ms-2 p-2" onclick="return UpdateStatus('status-select-${row.orderId}','${row.orderId}')">Áp Dụng</button>`
+                        return options;
+                    }
+                },
+                {
+                    "data": null, "render": function (data, type, row) {
+
+                        return `<button type="button" class="btn btn-warning" onclick="return onDetailOrder('${row.orderId}')" ><i class="fas fa-info"></i></button>
+                                                                <button type="button" class="btn btn-danger" onclick="return onCancelOrder('${row.orderId}')" ><i class="fas fa-trash"></i></button>`;
+                    }
+                },
+
+            ],
+
+        });
+
+
+
+
+
+    }
+
+
+</script>

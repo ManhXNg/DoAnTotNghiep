@@ -1,0 +1,206 @@
+﻿@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@model IPagedList<CategoryProduct>
+<main>
+    <div class="container-fluid px-4">
+        <h1 class="mt-4">Danh mục sản phẩm </h1>
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-md-2">
+                        <button type="button" class="btn-success text-white p-2" onclick="return onCreateCategoryPD()">
+                            <i class="fas fa-plus-square"></i>
+                        </button>
+                    </div>
+                    <div class="col-md-4 ms-auto">
+                        <form method="get" action="/Admin/CategoryProduct/Index">
+                            <!-- Các trường dữ liệu của form -->
+
+                            <div class="input-group"> 
+                                
+                                <select class="form-select" id="status" name="status" style="margin-right:20px;">
+                                    <option value="-1">Tất cả</option>
+                                    <option value="1">Hoạt động</option>
+                                    <option value="0">Không hoạt động</option>
+                                </select>
+                                <input class="form-control border-end-0 border rounded-pill " type="search" name="searchQuery" placeholder="nhập tên danh mục để tìm" id="example-search-input">
+                                <span class="input-group-append">
+                                    <button class="btn btn-outline-light bg-primary border-bottom-0 border rounded-pill ms-n5" type="submit">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+                                </span>
+                            </div>
+                           
+                        </form>
+
+
+                       
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">Danh mục</th>
+                            <th scope="col">Tên danh mục sản phẩm</th>
+                            <th scope="col">Trạng thái</th>
+                            <th scope="col">Chức năng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var category in Model)
+                        {
+                            <tr>
+                                @{
+                                    string trangthai = category.Status == 1 ? "Hoạt động" : "Không hoạt động";
+                                }
+                                <td>@category.Category.CategoryName</td>
+                                <td>@category.CategoryProductName</td>
+                                <td>@trangthai</td>
+                                <td>
+                                    <button class="btn btn-primary" onclick="return onEditCategoryPrd('@category.CategoryProductName','@category.CategoryId','@category.CategoryProductId')"><i class="fas fa-edit"></i></button>
+                                    <a type="submit" class="btn btn-danger" href="@Url.RouteUrl("areas", new {area="Admin" ,controller="CategoryProduct" ,action="StatusFlag",id = category.CategoryProductId,page = ViewBag.PageNumber})"><i class="fas fa-sync-alt"></i></a>
+                                </td>
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                Trang @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+                @Html.PagedListPager(Model, page => Url.RouteUrl("areas", new {area ="Admin",controller ="CategoryProduct",action="Index" ,page, searchQuery = ViewBag.SearchQuery, status = ViewBag.Status }), new PagedListRenderOptions { LiElementClasses = new string[] { "page-item" }, PageClasses = new string[] { "page-link" } })
+            </div>
+        </div>
+    </div>
+</main>
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="modalCategoryPrd" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="title_category">Thêm danh mục sản phẩm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Tên danh mục sản phẩm</label>
+                    <input type="hidden" id="id_categoryprd" />
+                    <input type="text" class="form-control" id="name_categoryprd">
+                    <div id="name_categoryprd_mess" class="form-text text-danger"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Danh mục</label>
+                    
+                    <select class="form-select" aria-label="Default select example" id="id_categoryselect" asp-items="@ViewBag.ListCategory"></select>
+                </div>
+            </div>
+            <div class="modal-footer">
+
+                <button type="button" class="btn btn-success" id="btn_addcategoryPrd">Thêm</button>
+                <button type="button" class="btn btn-success" id="btn_editcategory">Sửa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        $('#btn_addcategoryPrd').click(function () {
+            let namecategory = $('#name_categoryprd').val();
+            //var regex = /^[a-zA-Z]+$/;
+            //if (!regex.test(namecategory)) {
+            //    $('#name_categoryprd_mess').text('Tên không thể để trống, hoặc tên không hợp lệ.')
+            //    return;
+            //}
+
+            $.ajax({
+                url: '/Admin/CategoryProduct/Create',
+                type: 'POST',
+                data: {
+                    // Dữ liệu cần gửi đi
+                    nameCategoryPrd: $('#name_categoryprd').val(),
+                    idCategory: $('#id_categoryselect').val(),
+
+                },
+                success: function (data) {
+                    if (data == 1) {
+                        MessageSucces("Thêm thành công");
+                        setTimeout(function () {
+                            // Thực hiện hành động sau 2 giây
+                            location.reload();
+                        }, 500);
+                    } else if (data == 2) {
+                        MessageWarning("Tên danh mục sản phẩm đã tồn tại");
+                    } else {
+                        MessageWarning("Thêm thất bại");
+                    }
+                    // Xử lý dữ liệu trả về nếu có
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    MessageWarning("Thêm thất bại");
+                }
+            });
+        });
+        $('#btn_editcategory').click(function () {
+            let namecategory = $('#name_categoryprd').val();
+            let categoryId = $('#id_categoryselect').val();
+            let categoryIdPrd = $('#id_categoryprd').val();
+           
+            if (namecategory == "") {
+                $('#name_categoryprd_mess').text('Tên không thể để trống, hoặc tên không hợp lệ.')
+                return;
+            }
+
+            $.ajax({
+                url: '/Admin/CategoryProduct/Update',
+                type: 'POST',
+                data: {
+                    // Dữ liệu cần gửi đi
+                    nameCategory: namecategory,
+                    categoryProductId: categoryIdPrd,
+                    categoryId: categoryId
+                },
+                success: function (data) {
+                    if (data == 1) {
+                        MessageSucces("Sửa thành công");
+                        setTimeout(function () {
+                            // Thực hiện hành động sau 2 giây
+                            location.reload();
+                        }, 500);
+                    } else if (data == 2) {
+                        MessageWarning("Tên danh mục đã tồn tại");
+                    } else {
+                        MessageWarning("Sửa thất bại");
+                    }
+                    // Xử lý dữ liệu trả về nếu có
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    MessageWarning("Sửa thất bại");
+                }
+            });
+        });
+
+    });
+    function onEditCategoryPrd(categoryName, categoryId,categoryIdPrd) {
+
+        $('#btn_addcategoryPrd').hide();
+        $('#modalCategoryPrd').modal('show');
+        $('#id_categoryprd').val(categoryIdPrd);
+        $('#name_categoryprd').val(categoryName);
+        $('#title_category').text('Sửa danh mục sản phẩm - ' + categoryName);
+        console.log(categoryId);
+        // Thiết lập giá trị được chọn cho select element
+        $("#id_categoryselect").val(categoryId);
+    }
+    function onCreateCategoryPD() {
+
+        $('#btn_editcategory').hide();
+        $('#modalCategoryPrd').modal('show');
+
+    }
+</script>

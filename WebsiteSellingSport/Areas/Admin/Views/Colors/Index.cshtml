@@ -1,0 +1,58 @@
+﻿@model IEnumerable<WebsiteSellingSport.Models.Color>
+
+@{ ViewData["Title"] = "Index"; }
+
+<main>
+    <div class="container-fluid px-4">
+        <h1>Màu sắc</h1>
+
+        @if (ViewBag.MessError != null)
+        {
+        <span id="mess" class="alert alert-danger m-4">
+            @ViewBag.MessError
+        </span>
+        }
+        <p>
+            <a class="btn btn-success" href="@Url.RouteUrl("areas", new {area="Admin" ,controller="Colors" ,action="Create"})">Tạo mới</a>
+        </p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.ColorName)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.ColorCode)
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.ColorName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ColorCode)
+        </td>
+        <td>
+            <a class="btn btn-warning" href="@Url.RouteUrl("areas", new {area="Admin" ,controller="Colors" ,action="Edit",id= @item.ColorId})">Sửa</a> |
+            <a class="btn btn-info" href="@Url.RouteUrl("areas", new {area="Admin" ,controller="Colors" ,action="Details",id= @item.ColorId})">Chi tiết</a> |
+            <a class="btn btn-danger" href="@Url.RouteUrl("areas", new {area="Admin" ,controller="Colors" ,action="Delete",id= @item.ColorId})">Xóa</a>
+        </td>
+    </tr>}
+            </tbody>
+        </table>
+    </div>
+</main>
+@section Scripts{
+    <script>
+       
+        setTimeout(function () {
+            $('#mess').fadeOut('slow');
+        }, 3000)
+    </script>
+    
+}

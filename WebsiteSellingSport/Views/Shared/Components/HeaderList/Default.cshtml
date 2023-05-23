@@ -1,0 +1,133 @@
+﻿
+<div class="container-fluid" id="navbar-header">
+    <div class="row bg-secondary py-2 px-xl-5">
+        <div class="col-lg-6 d-none d-lg-block">
+            <div class="d-inline-flex align-items-center">
+                <a class="text-dark" href=""> Nam Từ Liêm, Hà Nội</a>
+                <span class="text-muted px-2">|</span>
+                <a class="text-dark" href="">0978936126</a>
+                <span class="text-muted px-2">|</span>
+                <a class="text-dark" href="">Hỗ trợ</a>
+            </div>
+        </div>
+        <div class="col-lg-6 text-center text-lg-right">
+            <div class="d-inline-flex align-items-center">
+                <a class="text-dark px-2" href="">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+               
+                <a class="text-dark px-2" href="">
+                    <i class="fab fa-instagram"></i>
+                </a>
+              
+            </div>
+        </div>
+    </div>
+    <div class="row align-items-center py-3 px-xl-5">
+        <div class="col-lg-3 d-none d-lg-block">
+            <a href="" class="text-decoration-none">
+                <h1 class="m-0 display-5 font-weight-semi-bold"><span class="text-primary font-weight-bold border px-3 mr-1">H&M</span>Sports</h1>
+            </a>
+        </div>
+
+        <div class="col-lg-6 col-6 text-left">
+            <form method="POST" action="@Url.Action("Index","Shop")">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="search" placeholder="Tìm kiếm sản phẩm">
+                    <div class="input-group-append">
+                        <button type="submit" class="input-group-text bg-transparent text-primary">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-lg-3 col-6 text-right">
+            @if (User.IsInRole("Customer"))
+            {
+                <span> Xin chào @User.Identity.Name </span>
+            }
+            <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false" ">
+                <i class="fas fa-user"></i>
+
+            </button>
+            <ul class="dropdown-menu">
+            @if (!User.IsInRole("Customer"))
+            {
+
+
+                    <li>
+                        <button type="button" class="dropdown-item" data-toggle="modal" data-target="#modallogin">
+                            Đăng nhập
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item" data-toggle="modal" data-target="#modaldangky">
+                            Đăng ký
+                        </button>
+                       
+
+                    </li>
+            }
+            else
+            {
+                    <li><a class="dropdown-item" href="@Url.Action("EditCustomer","Customer")">Tài khoản</a></li>
+                    <button type="button" class="dropdown-item" data-toggle="modal" data-target="#modal-chage-pass">
+                        Đổi mật khẩu
+                    </button>
+                    <li><a class="dropdown-item" href="@Url.Action("Logout","Login")">Đăng xuất</a></li>
+            }
+
+            </ul>
+          
+            <button class="btn border bg-secondary text-dark" data-toggle="modal" data-target="#modalcart">
+                <i class="fas fa-shopping-cart text-primary"></i>
+                <span class="badge " id="length_cart"></span>
+            </a>
+        </div>
+
+    </div>
+    <nav class="navbar navbar-expand-lg bg-light navbar-light py-3 py-lg-0 px-0 mx-xl-5 ">
+        <a href="" class="text-decoration-none d-block d-lg-none">
+            <h1 class="m-0 display-5 font-weight-semi-bold"><span class="text-primary font-weight-bold border px-3 mr-1">SHOP H&M </span></h1>
+        </a>
+        <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
+            <div class="navbar-nav mr-auto py-0">
+                <a href="/Home" class="nav-item nav-link active">Trang chủ</a>
+                <a href="/Shop" class="nav-item nav-link">Shop</a>
+                @foreach (var item in ViewBag.CategoryHeader)
+                {
+                    <div class="nav-item dropdown">
+
+
+                        <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">@item.CategoryName</a>
+
+
+                        <div class="dropdown-menu rounded-0 m-0">
+                            @foreach (var item2 in ViewBag.CategoryProductHeader)
+                            {
+                                @if (item.CategoryId == item2.CategoryId)
+                                {
+                                    <a class="dropdown-item" href="@Url.Action("Index","Shop", new {categoryProductid = item2.CategoryProductId})">@item2.CategoryProductName</a>
+
+                                }
+
+                            }
+                        </div>
+
+
+
+
+
+                    </div>
+                }
+               
+            </div>
+
+        </div>
+    </nav>
+    <hr />
+</div>

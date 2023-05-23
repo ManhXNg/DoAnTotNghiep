@@ -1,0 +1,68 @@
+﻿@model IEnumerable<WebsiteSellingSport.Models.Customer>
+
+@{
+    ViewData["Title"] = "Index";
+}
+<main>
+    <div class="container-fluid px-4">
+        <h1>Khách hàng</h1>
+        
+
+            <form method="get" action="/Admin/Customers/Index">
+            <div class="input-group row">
+                <input type="text" class="form-control col-3" value="@ViewBag.Search" name="sdt" placeholder="nhập tên hoặc sdt,email để tìm kiếm">
+                    <div class="input-group-append col-3">
+                        <button type="submit" class="input-group-text bg-transparent text-primary">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.FullName)
+                    </th>
+                   @* <th>
+                        @Html.DisplayNameFor(model => model.Password)
+                    </th>*@
+                    <th>
+                        @Html.DisplayNameFor(model => model.Phone)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Email)
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.FullName)
+                        </td>
+                      @*  <td>
+                            @Html.DisplayFor(modelItem => item.Password)
+                        </td>*@
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Phone)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Email)
+                        </td>
+                        <td>
+                            <a href="/Admin/Customers/Edit/@item.CustomerId" class="btn btn-warning">Sửa</a> 
+
+                       
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        
+    </div>
+</main>

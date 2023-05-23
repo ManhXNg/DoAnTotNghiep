@@ -1,0 +1,43 @@
+﻿@model WebsiteSellingSport.Models.Size
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<main>
+    <div class="container-fluid px-4">
+        <h1>Create</h1>
+
+        <h4>Size</h4>
+        <hr />
+        <div class="row">
+            <div class="col-md-4">
+                <form href="@Url.RouteUrl("areas", new {area="Admin",controller="Sizes",action="Create"})" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <label asp-for="SizeName" class="control-label"></label>
+                        <input asp-for="SizeName" class="form-control" />
+                        <span asp-validation-for="SizeName" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="SizeCode" class="control-label"></label>
+                        <input asp-for="SizeCode" class="form-control" />
+                        <span asp-validation-for="SizeCode" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" value="Create" class="btn btn-primary" />
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div>
+            <a href="@Url.RouteUrl("areas", new {area="Admin",controller="Sizes",action="Index"})">Quay lại</a>
+        </div>
+    </div>
+</main>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

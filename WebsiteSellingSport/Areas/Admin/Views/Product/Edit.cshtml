@@ -1,0 +1,250 @@
+﻿@model WebsiteSellingSport.Models.Product
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<main>
+    <div class="container-fluid px-4">
+        <h4>Sửa sảm phẩm @Model.ProductName</h4>
+        <hr />
+        <div class="row">
+            <div class="col-md-4">
+                <form href="@Url.RouteUrl("areas", new {area="Admin",controller="Product",action="Edit"})" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="ProductId" id="id_product" />
+                    <div class="form-group">
+                        <label asp-for="CategoryProductId" class="control-label">Danh mục sản phẩm</label>
+                        <select asp-for="CategoryProductId" class="form-control" asp-items="ViewBag.CategoryProductId"></select>
+                        <span asp-validation-for="CategoryProductId" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="ProductName" class="control-label">Tên sản phẩm</label>
+                        <input asp-for="ProductName" class="form-control" />
+                        <span asp-validation-for="ProductName" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mt-2">
+                        <label class="control-label ">Color - Size  </label><a class="btn btn-success" onclick=" return onAddColorSize()">  <i class="fas fa-plus-square"></i></a>
+
+                        <div class="container m-2">
+                            <div class="row row-cols-2 row-cols-lg-3 g-2 g-lg-3" id="lst_colorsize">
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Price" class="control-label">Giá</label>
+                        <input asp-for="Price" class="form-control" />
+                        <span asp-validation-for="Price" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Description" class="control-label">Mô tả</label>
+                        <textarea asp-for="Description" class="form-control"> </textarea> 
+                        <span asp-validation-for="Description" class="text-danger"></span>
+
+                    </div>
+
+                    <div class="form-group mt-2">
+                        <input type="submit" value="Save" class="btn btn-success" />
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div>
+            <a href="@Url.RouteUrl("areas", new {area="Admin",controller="Product",action="Index"})">Quay lại</a>
+        </div>
+    </div>
+</main>
+<!-- Modal color size -->
+<div class="modal fade" id="modalEditColorSize" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+
+                <h5 class="modal-title" id="title_colorSize">Thêm color - size </h5>
+                <button type="button" class="btn-close " data-bs-dismiss="modal" aria-label="Close"></button>
+                <input type="hidden" id="id_colorsize" />
+            </div>
+            <div class="modal-body">
+                <div id="showhidecolorsize">
+                    <div class="mb-3">
+                        <label class="form-label">Color</label>
+                        <select class="form-select" aria-label="Default select example" id="id_colorselect" asp-items="@ViewBag.Colors"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Size</label>
+
+                        <select class="form-select" aria-label="Default select example" id="id_sizeselect" asp-items="@ViewBag.Sizes"></select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Số lượng</label>
+
+                    <input class="form-control" type="number" id="quantity_cs" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="btn_addcolorsize">Thêm</button>
+                <button type="button" class="btn btn-warning" id="btn_editcolorsize">Sửa</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    $(document).ready(function () {
+        LoadColorSizeCreate()
+        $('#btn_addcolorsize').click(function () {
+            var obj = {
+                ColorId: parseInt($('#id_colorselect').val()),
+                SizeId: parseInt($('#id_sizeselect').val()),
+                Stock: parseInt($('#quantity_cs').val()),
+                ProductId: parseInt($('#id_product').val()),
+
+            }
+            $.ajax({
+                url: '/Admin/Product/AddColorSizeFromEdit',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(obj),
+                success: function (result) {
+
+                    if (result != 0) {
+
+                        LoadColorSizeCreate();
+                    } else {
+                        alert('Màu sắc, kích thước và số lượng đã tồn tại.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log('Lỗi: ' + error);
+                }
+            });
+        });
+        $('#btn_editcolorsize').click(function () {
+            $.ajax({
+                url: '/Admin/Product/EditColorSizeFromEdit',
+                type: 'GET',
+                contentType: 'application/json',
+                data: {
+                    id: $('#id_colorsize').val(),
+                    quantity: $('#quantity_cs').val()
+
+                },
+                success: function (result) {
+
+                    if(result == 1){
+                        LoadColorSizeCreate();
+                        $('#modalEditColorSize').modal('hide');
+                    }else{
+                        alert("Sửa thất bại");
+                    }
+                   
+                },
+                error: function (xhr, status, error) {
+                    console.log('Lỗi: ' + error);
+                }
+            });
+        });
+
+    });
+    
+    function onAddColorSize() {
+        $('#showhidecolorsize').show();
+        $('#modalEditColorSize').modal('show');
+        $('#title_colorSize').text('Thêm color - size');     
+        $('#btn_editcolorsize').hide();
+        $('#btn_addcolorsize').show();
+    }
+    function deleteColorSize(id){
+        if (!confirm("Bạn có chắc chắn muốn xóa không?")) {
+           return;
+        }
+        $.ajax({
+            url: '/Admin/Product/DeleteColorSizeFromEdit',
+            type: 'GET',
+            contentType: 'application/json',
+            data: {
+                id: id,
+            },
+            success: function (result) {
+
+                if (result == 1) {
+                    LoadColorSizeCreate();
+                   
+                } else {
+                    alert("Xóa thất bại");
+                }
+
+            },
+            error: function (xhr, status, error) {
+                console.log('Lỗi: ' + error);
+            }
+        });
+        
+    }
+    function editColorSize(id){
+        $('#showhidecolorsize').hide();
+        $('#modalEditColorSize').modal('show');
+        $('#btn_editcolorsize').show();
+        $('#btn_addcolorsize').hide();
+        $.ajax({
+            url: '/Admin/Product/GetListColorSizeEditById',
+            type: 'GET',
+            contentType: 'application/json',
+            data: {
+                id: id
+            },
+            success: function (result) {
+                console.log(result);
+                $('#title_colorSize').text(`Sửa ${result.nameColor} - ${result.nameSize}`);
+                $('#quantity_cs').val(result.stock);
+                $('#id_colorsize').val(result.id);
+            },
+            error: function (xhr, status, error) {
+                console.log('Lỗi: ' + error);
+            }
+        });
+    }
+    function LoadColorSizeCreate() {
+        $.ajax({
+            url: '/Admin/Product/GetListEditColorSize',
+            type: 'GET',
+            data: {
+                id: parseInt($('#id_product').val())
+
+            },
+            contentType: 'application/json',
+            success: function (result) {
+                var html = '';
+
+                if (!result.length == 0) {
+                    $.each(result, function (index, value) {
+                        html += `<div class="col" >
+                                        <div class="p-3 border bg-light " id="divtest">
+                                                                              ${value.nameColor} -  ${value.nameSize} - ${value.quantity}
+                                                    <a class="btn btn-sm btn-warning" onclick="return editColorSize('${value.id}')" id="btn_editcs"><i class="fas fa-edit"></i></a>
+                                                            <a class="btn btn-sm btn-danger" onclick="return deleteColorSize('${value.id}')" id="btn_deletecolorsize">x</a>
+                                        </div>
+
+                                    </div>`;
+                    });
+                }
+
+                $('#lst_colorsize').html(html);
+            },
+            error: function (xhr, status, error) {
+                console.log('Lỗi: ' + error);
+            }
+        });
+
+    }
+</script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

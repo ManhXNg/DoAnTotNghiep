@@ -1,0 +1,188 @@
+﻿@using static WebsiteSellingSport.Areas.Admin.Controllers.OrderController;
+@using static WebsiteSellingSport.Areas.Admin.Controllers.OrderController;
+@model OrderDetailViewModel
+<div class="container-fluid pt-5" style="margin-top:150px !important;  ">
+    <!-- This script got from frontendfreecode.com -->
+
+    <div class="tabs-verical m-5">
+        <h3>
+            @if (User.IsInRole("Customer"))
+            {
+                @User.Identity.Name
+            }
+        </h3>
+        <div class="row">
+            <div class="col-3">
+                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <a class="nav-link  py-4" href="/Customer/EditCustomer">
+                        Thông tin cá nhân
+                    </a>
+                    <a class="nav-link active py-4  " id="v-pills-profile-tab" data-toggle="pill" href="#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="true" name="v-pills-profile-tab">
+                        Đơn hàng
+                    </a>
+
+                </div>
+            </div>
+            <div class="col-9">
+
+                <h1 class="mb-3">Chi tiết đơn hàng</h1>
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header bg-dark text-white">
+                                Thông tin đơn hàng
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-12 col-md-6">
+
+                                        <p>Mã đơn hàng: @Model.Order.OrderId</p>
+                                        <p>Ngày đặt hàng: @Model.Order.OrderDate.ToString("dd/MM/yyyy HH:mm:ss")</p>
+                                        <p>
+                                            Trạng thái đơn hàng:
+
+                                            @if (Model.Order.Status == 1)
+                                            {
+                                                <span class="text-info">Đã đặt hàng</span>
+
+                                            }
+                                            else if (Model.Order.Status == 6)
+                                            {
+                                                <span class="text-info">Đơn hàng đã được xác nhận</span>
+                                            }
+                                            else if (Model.Order.Status == 2)
+                                            {
+                                                <span class="text-info">Đơn hàng đang được giao</span>
+                                            }
+                                            else if (Model.Order.Status == 3)
+                                            {
+                                                <span class="text-info">Giao thành công</span>
+                                            }
+                                            else if (Model.Order.Status == 4)
+                                            {
+                                                <span class="text-danger">Đã Hủy</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-danger">Không hoạt động</span>
+
+                                            }
+                                        </p>
+                                    </div>
+                                    <div class=" col-12 col-md-6">
+                                        <p>Tên khách hàng: @Model.Order.FullName</p>
+                                        <p>Email: @Model.Order.Email</p>
+                                        <p>Số điện thoại: @Model.Order.Phone</p>
+                                        <p>Địa chỉ: @Model.Order.Address</p>
+                                        <p>Ghi chú: @Model.Order.Note</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="card mt-3">
+                            <div class="card-header bg-dark text-white">
+                                Danh sách sản phẩm
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+
+                                            <th scope="col">Tên sản phẩm</th>
+                                            <th scope="col">Số lượng</th>
+                                            <th scope="col">Giá</th>
+                                            <th scope="col">Thành tiền</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.OrderDetailViews)
+                                        {
+                                            <tr>
+
+                                                <td>@item.ProductName  -  @item.ColorName   - @item.SizeName</td>
+                                                <td>@item.Quantity</td>
+                                                <td>@item.Price.ToString("#,##0").Replace(',', '.') đ</td>
+                                                <td>@item.Total.ToString("#,##0").Replace(',', '.') đ</td>
+
+                                            </tr>
+                                        }
+                                       
+
+
+                                    </tbody>
+                                </table>
+                                <div class="row">
+                                    <div class="col-md-6 offset-md-9">
+                                        <p class="fw-bold mb-0 p-2">Tổng tiền: @Model.Order.TotalAmount.ToString("#,##0").Replace(',', '.') đ</p>
+                                        <p class="fw-bold mb-0 p-2">Phí ship: @Model.Order.TotalShip.Value.ToString("#,##0").Replace(',', '.') đ</p>
+                                        <h6 class="fw-bold mb-0 p-2">
+                                            Tổng tiền thanh toán:  @{
+                                                var total = Model.Order.TotalAmount + Model.Order.TotalShip.Value;
+                                            } @total.ToString("#,##0").Replace(',', '.') đ
+                                        </h6>
+                                        @if (Model.Order.Status == 1)
+                                        {                                                                               
+                                        <button class="btn btn-danger mt-2" id="cancel-order" data-id="@Model.Order.OrderId">Hủy đơn hàng</button>
+                                        }
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+    $(function(){
+        $('#cancel-order').click(function(){
+            Swal.fire({
+                title: 'Bạn có chắc muốn hủy đơn hàng?',
+                text: "Hành động này sẽ xóa toàn bộ thông tin về đơn hàng",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'OK',
+                cancelButtonText: 'Cancel',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    let orderId = $('#cancel-order').attr('data-id');
+                    $.ajax({
+                        url: '/Customer/UpdateStatusOrder',
+                        type: 'POST',
+                        data: { orderId: orderId },
+                        success: function (result) {
+                            if (result == 1) {
+                                
+                                MessageSucces('Hủy đơn hàng thành công');
+                                setTimeout(function () {
+                                    location.reload();
+                                }, 1500);
+                               
+                            } else {
+                                MessageError('Không thể cập nhật trạng thái đơn hàng');
+                            }
+                        },
+                        error: function () {
+                            MessageError('Lỗi khi gửi yêu cầu cập nhật trạng thái đơn hàng');
+                        }
+                    });
+                }
+            });
+
+
+
+
+
+
+            
+        });
+    });
+</script>

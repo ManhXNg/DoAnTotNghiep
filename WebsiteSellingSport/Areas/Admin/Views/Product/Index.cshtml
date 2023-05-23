@@ -1,0 +1,277 @@
+﻿<style>
+    #modalProduct {
+        z-index: 2000;
+    }
+
+    #modalAddImgProduct {
+        z-index: 2100;
+    }
+
+    #data_img_add img {
+        width: 30%;
+    }
+</style>
+<main>
+    <div class="container-fluid px-4">
+        <h1 class="mt-4">Quản lý sản phẩm</h1>
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-md-2">
+                        <a href="@Url.RouteUrl("areas", new {area="Admin",controller="Product",action="Create"})" class="btn-success text-white p-2 ">
+                            <i class="fas fa-plus-square"></i>
+                        </a>
+                    </div>
+               
+                </div>
+            </div>
+            <div class="card-body">
+
+                <table class="table table-bordered" id="tblProduct">
+                    <thead>
+                        <tr>
+                            <th scope="col">Danh mục sản phẩm</th>
+                            <th scope="col">Tên sản phẩm</th>
+                            <th scope="col">Ảnh</th>
+                            <th scope="col">Giá</th>
+                            <th scope="col">Trạng thái</th>
+                            <th scope="col">Chức năng</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+
+
+<!-- Modal -->
+<!-- Modal -->
+<div class="modal fade " id="modalImgProduct" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="titleNameProduct">Ảnh sản phẩm - </h5><button type="button" class="btn btn-success" id="btn_showAddImg" data-id=""> <i class="fas fa-plus-square"></i></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body row" id="lst_img">
+                <div id="data_img" data-id="" style="position: relative !important; width: 200px;">
+                    @*                    <button class="btn btn-danger" style=" position: absolute;top: 0;right: 0;"><i class="fas fa-times"></i></button>
+                    <img src="~/ImageProduct/Screenshot 2023-04-14 205518.png" width="200" height="200" />*@
+                </div>
+            </div>
+
+
+
+        </div>
+    </div>
+</div>
+<div class="modal fade " id="modalAddImgProduct" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Thêm ảnh</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">  Chọn file <input type="file" id="uploadMutiImg" accept=".jpg, .png" multiple /><button class="btn btn-danger" onclick="return clearImg()">Clear Img</button></div>
+
+
+                <div id="data_img_add" class="row">
+
+                    @*<button class="btn btn-danger" style=" position: absolute;top: 0;right: 0;"><i class="fas fa-times"></i></button>
+                    <img src="https://kiemtientuweb.com/ckfinder/userfiles/images/anh-gai-xinh/anh-gai-xinh-2.jpg" width="200" height="200" />*@
+
+                </div>
+            </div>
+            <div class="modal-footer">
+
+                <button type="button" class="btn btn-success" id="add_img_product" data-id="" onclick=" return uploadImage()" data-bs-dismiss="modal">Thêm</button>
+                <button type="button" class="btn btn-secondary" id="btn_close_addimg" data-bs-dismiss="modal">Quay lại</button>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+
+        loadData();
+
+
+    });
+    function onEditProduct(id){
+        
+        var url = '/Admin/Product/Edit/' + id;
+        window.location.href = url;
+    }
+    function onDeleteProduct(id) {
+        
+        $.ajax({
+            url: '/Admin/Product/DeleteFlag',
+            type: 'GET',
+            data: { id: id },
+            success: function (data) {
+                $('#tblProduct').dataTable().fnDestroy();
+                loadData()
+
+            },
+            error: function () {
+
+            }
+        });
+    }
+    function clearImg() {
+        $("#data_img_add img").each(function () {
+            $(this).remove();
+        });
+
+
+        $('#uploadMutiImg').val('');
+    }
+    function loadData() {
+        $('#tblProduct').DataTable({
+            "ajax": {
+                "url": "/Admin/Product/GetListProduct",
+                "type": "GET",
+                "dataType": "json",
+                "dataSrc": ""
+            },
+            "columns": [
+                { "data": "CategoryName" },
+                { "data": "ProductName" },
+                {
+                    "data": null, "render": function (data, type, row) {
+                        return `<button type="button" onclick="return onImage('${row.ProductId}','${row.ProductName}')" class="btn btn-primary "><i class="fas fa-eye"></i></button>`;
+                    }
+                },
+                { "data": "Price" },
+                { "data": "Status" },
+                {
+                    "data": null, "render": function (data, type, row) {
+                        return `<button type="button" class="btn btn-warning" onclick="return onEditProduct('${row.ProductId}')" ><i class="fas fa-edit"></i></i></button>
+                                <button type="button" class="btn btn-danger" onclick="return onDeleteProduct('${row.ProductId}')" ><i class="fas fa-sync"></i></button>`;
+                    }
+                },
+
+            ]
+        });
+
+        $('#btn_showAddImg').on('click', function () {
+            $('#modalAddImgProduct').modal('show');
+
+
+
+            // code xử lý sự kiện
+        });
+
+
+
+    }
+  
+    function loadImageProduct(id){
+        var html = '';
+        $.ajax({
+            url: '/Admin/Product/LoadImage',
+            type: 'GET',
+            data: { idProduct: id },
+            success: function (data) {
+
+                $.each(data, function (index, value) {
+                    html += `<div id="data_img"  style="position: relative !important; width: 200px; margin: 10px;">
+                                <button class="btn btn-danger" onclick="return onDeleteImage('${value.ProductImageId}','${value.ProductId}')" style="position: absolute;top: 0;right: 0;"><i class="fas fa-times"></i></button>
+                                <img src="/ImageProduct/${value.ImageUrl}" width="200" height="200" />
+                            </div>`;
+
+                });
+                $('#lst_img').html(html);
+            },
+            error: function () {
+                alert('Load ảnh thất bại vui lòng kiểm tra lại');
+            }
+        });
+    }
+    function onImage(id,productName) {
+        
+        $('#modalImgProduct').modal('show');
+        $('#titleNameProduct').text('Ảnh sản phẩm - ' + productName);
+        $("#btn_showAddImg").attr('data-id', id);
+        loadImageProduct(id);
+       
+    }
+    function onDeleteImage(id,productId) {
+        if (!confirm("Bạn có chắc chắn muốn xóa ảnh này không?")) {
+            return;
+        }
+        $.ajax({
+            url: '/Admin/Product/DeleteImage',
+            type: 'POST',
+            data: { idImage: id },
+            success: function (data) {
+
+                if (!data == 1) {
+                    alert('Xóa file thất bại');
+                }else{
+                    loadImageProduct(productId);
+                }
+            },
+            error: function () {
+                alert('Xóa file thất bại');
+            }
+        });
+    }
+    function uploadImage() {
+        var idProduct = $('#btn_showAddImg').data('id');
+        var files = $('input[type=file]').get(0).files;
+        var formData = new FormData();
+
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            formData.append("files", file);
+        }
+        formData.append("idProduct", idProduct);
+        $.ajax({
+            url: '/Admin/Product/UploadImage',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                clearImg();
+                $('#modalAddImgProduct').modal('hide');
+                alert('Upload successful!');
+                loadImageProduct(idProduct);
+            },
+            error: function () {
+                alert('An error occurred while uploading.');
+            }
+        });
+    }
+    const fileInput = document.getElementById('uploadMutiImg');
+    const previewContainer = document.getElementById('data_img_add');
+
+    fileInput.addEventListener('change', (event) => {
+        const files = event.target.files;
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const reader = new FileReader();
+
+            reader.readAsDataURL(file);
+
+            reader.onload = (event) => {
+                const img = document.createElement('img');
+                img.src = event.target.result;
+                //img.width = 30%;
+                //img.height = 30%;
+                img.style.display = 'inline-block'; // Thêm thuộc tính display inline-block
+                previewContainer.appendChild(img);
+            };
+        }
+    });
+</script>

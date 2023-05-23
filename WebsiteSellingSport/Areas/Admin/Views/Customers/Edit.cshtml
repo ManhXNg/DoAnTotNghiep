@@ -1,0 +1,69 @@
+﻿@model WebsiteSellingSport.Models.Customer
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Sửa</h1>
+
+<h4>Khách hàng</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form href="@Url.RouteUrl("areas", new {area="Admin",controller="Customers",action="Edit"})" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="CustomerId" />
+            <div class="form-group">
+                <label asp-for="FullName" class="control-label"></label>
+                <input asp-for="FullName" class="form-control" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="control-label"></label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Phone" class="control-label"></label>
+                <input asp-for="Phone" class="form-control" />
+                <span asp-validation-for="Phone" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Email" class="control-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DateBirth" class="control-label"></label>
+                <input asp-for="DateBirth" type="date" class="form-control" />
+                <span asp-validation-for="DateBirth" class="text-danger"></span>
+            </div> 
+            <div class="form-group">
+                <label asp-for="Address" class="control-label"></label>
+                <input asp-for="Address" type="text" class="form-control" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Sex" class="control-label">Giới tính</label>
+                <div class="form-check">
+                    <input class="form-check-input" asp-for="Sex" type="radio" value="true">
+                    <label class="form-check-label" asp-for="Sex" for="male">Nam</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" asp-for="Sex" type="radio" value="false">
+                    <label class="form-check-label" asp-for="Sex" for="female">Nữ</label>
+                </div>
+                <span asp-validation-for="Sex" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mt-2 ">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a href="/Admin/Customers" >Quay lại</a>
+</div>
+

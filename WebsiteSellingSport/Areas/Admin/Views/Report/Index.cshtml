@@ -1,0 +1,260 @@
+﻿
+
+<div class="container-fluid px-4">
+    <h2>Báo cáo thống kê</h2>
+   @* <div class="bg-light d-flex align-items-center justify-content-between col-md-2 ">
+        <p>Từ  1/5/2023 đến 7/5/2023</p>
+    </div>*@
+    <div class="row mb-3">
+
+
+        <input class="form-control mt-2" style="width:12% !important ;margin-right:10px;" value="@DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd")" type="date" id="date_start" />
+        <input class="form-control mt-2" style="width:12% !important;margin-right:10px;" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" id="date_end" />
+        <button type="submit" class="btn btn-primary mt-2" style="width:5% !important;margin-right:10px;" onclick=" return GetFillterReprort()">Lọc</button>
+
+
+
+
+
+    </div>
+    <div class="row g-4 ">
+        <div class="col-sm-6 col-xl-3">
+            <div class="bg-light d-flex align-items-center justify-content-between p-4 px-2">
+
+               
+                <h5 class="mb-0 fw-bold text-dark text-uppercase" id="text-date">...</h5>
+               
+
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="bg-light d-flex align-items-center justify-content-between p-4">
+                <i class="fas fa-dollar-sign fa-2x text-primary"></i>
+                <h5 class="mb-0 fw-bold text-dark text-uppercase">Doanh thu:</h5>
+                <h5 class="mb-0" id="total_money"></h5>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="bg-light d-flex align-items-center justify-content-between p-4 px-2">
+
+                <i class="fas fa-shopping-cart text-primary fa-2x"></i>
+                <h5 class="mb-0 fw-bold text-dark text-uppercase">Tổng đơn hàng:</h5>
+                <h5 class="mb-0" id="total_order"></h5>
+
+            </div>
+        </div>
+        @* <div class="col-sm-6 col-xl-3">
+        <div class="bg-light d-flex align-items-center justify-content-between p-4 px-2">
+
+        <i class="fas fa-book text-primary fa-2x"></i>
+        <h5 class="mb-0 fw-bold text-dark text-uppercase">Sản phẩm bán ra:</h5>
+        <h5 class="mb-0" id="total_product"></h5>
+
+        </div>
+        </div>*@
+
+
+    </div>
+
+
+    <!-- Content Row Date-->
+    <div class="row mt-3">
+        <div>
+
+            <a class="d-none d-sm-inline-block btn btn-sm btn-primary mb-2" href="#" id="btnExport">
+                <i class="fas fa-download fa-sm text-white-50"></i>  Xuất Excel
+            </a>
+
+
+
+        </div>
+
+        <div class="col-xl-4 col-lg-4">
+            <div class="card shadow mb-4">
+                <table class="table tablereport" id="table-report">
+
+                    <thead>
+                        <tr>
+                            <th>
+                                Date Value
+                            </th>
+                            <th>
+                                Tổng doanh thu
+                            </th>
+                            <th>
+                                Tổng đơn hàng
+                            </th>
+
+
+                        </tr>
+                    </thead>
+                    <tbody class="datatable_report">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-xl-8 col-lg-8">
+
+
+
+            <!-- Bar Chart -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-dark">Doanh thu</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-bar">
+                        <canvas id="myChart"></canvas>
+                    </div>
+
+
+
+                </div>
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+
+</div>
+@{
+    ViewBag.Title = "Report";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.2.0"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/linways/table-to-excel@v1.0.4/dist/tableToExcel.js"></script>
+<script>
+    var myChart;
+    
+    function GetFillterReprort(){
+        
+        var dateStart = moment($('#date_start').val());
+        var dateEnd = moment($('#date_end').val());
+
+
+        if (dateStart.isAfter(dateEnd)) {
+            MessageError('Ngày bắt đầu phải nhỏ hơn ngày kết thúc');
+            return;
+        }
+        $('#text-date').text(`Từ ${dateStart.format('DD/MM/YYYY')} đến ${dateEnd.format('DD/MM/YYYY')}:`);
+            $.ajax({
+                url: '/Admin/Report/GetReportData',
+                type: 'GET',
+                data: { dateStart: $('#date_start').val(), dateEnd: $('#date_end').val() },
+                dataType: 'json',
+                success: function (data) {
+               
+                    //Table
+                    var tbody = $('.datatable_report');
+                    tbody.empty();
+
+                    $.each(data, function (i, item) {
+                        var dateValue = moment(item.dateValue).format('DD/MM/YYYY');
+                        var totalMoney = item.totalMoney.toLocaleString('vi-VN');
+                        var order = item.order.toLocaleString('vi-VN');
+
+                        var row = $('<tr>');
+                        row.append($('<td>').text(dateValue));
+                        row.append($('<td>').text(totalMoney + ' đ'));
+                        row.append($('<td>').text(order));
+
+                        tbody.append(row);
+                    });
+                    ////
+                    var labels = [];
+                    var orders = [];
+                    var revenues = [];
+                    var totalMoney = 0;
+                    var totalOrder = 0;
+                    $.each(data, function (i, item) {
+                        labels.push(moment(item.dateValue).format('DD/MM/YYYY ')); // format lại label
+                        orders.push(item.order);
+                        revenues.push(item.totalMoney);
+
+                        totalMoney += item.totalMoney;
+                        totalOrder += item.order;
+                    });
+                    $('#total_money').text(totalMoney.toLocaleString('vi-VN') + ' đ');
+                    $('#total_order').text(totalOrder);
+                    var ctx = document.getElementById('myChart').getContext('2d');
+                    if (myChart) {
+                      myChart.destroy();
+                    }
+                   myChart =   new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: 'Đơn hàng',
+                                    data: orders,
+
+                                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                                    borderColor: 'rgba(255, 99, 132, 1)',
+                                    borderWidth: 1
+
+                                },
+                                {
+                                    label: 'Doanh thu',
+                                    data: revenues,
+
+
+
+                                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true,
+                                        callback: function (value, index, values) {
+                                            return value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+                                        }
+                                    }
+                                }]
+                            },
+                            tooltips: {
+                                callbacks: {
+                                    label: function (tooltipItem, data) {
+                                    console.log(tooltipItem);
+                                    console.log(data);
+                                        var label = data.labels[tooltipItem.index];
+                                        label = moment(label).format('DD/MM/YYYY');
+                                    //if (reportType === 'revenue') {
+                                    //    return label + ': ' + tooltipItem.yLabel.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+                                    //} else {
+                                    //    return label + ': Đơn ' + tooltipItem.yLabel;
+                                    //}
+                                        return label + ': ' + tooltipItem.yLabel.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+            }
+        });
+    }
+    $(function () {
+        $("#btnExport").click(function () {
+            let table = document.getElementsByClassName("tablereport");
+            TableToExcel.convert(table[0], { // html code may contain multiple tables so here we are refering to 1st table tag
+                name: `Doanhthu.xlsx`, // fileName you could use any name
+                sheet: {
+                    name: 'Sheet 1' // sheetName
+                }
+            });
+        });
+        GetFillterReprort();
+        
+    });
+
+</script>

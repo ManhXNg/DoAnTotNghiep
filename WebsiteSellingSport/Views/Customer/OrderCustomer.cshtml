@@ -1,0 +1,81 @@
+﻿@using WebsiteSellingSport.ModelView;
+@model List<OrderView>
+<div class="container-fluid pt-5" style="margin-top:150px !important;  ">
+    <!-- This script got from frontendfreecode.com -->
+
+    <div class="tabs-verical m-5">
+        <h3>
+            @if (User.IsInRole("Customer"))
+            {
+                @User.Identity.Name
+            }
+        </h3>
+        <div class="row">
+            <div class="col-3">
+                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <a class="nav-link  py-4" href="/Customer/EditCustomer">
+                        Thông tin cá nhân
+                    </a>
+                    <a class="nav-link active py-4" id="v-pills-profile-tab" data-toggle="pill" href="#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="true" name="v-pills-profile-tab">
+                        Đơn hàng
+                    </a>
+
+                </div>
+            </div>
+            <div class="col-9" style=" height:500px; max-height: 900px;overflow: auto;">
+
+                <h3>Những đơn hàng đã mua gần đây</h3>
+                <br />
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Mã hóa đơn</th>
+                            <th scope="col">Ngày mua</th>
+                            <th scope="col">Người nhận</th>
+                            <th scope="col">Tổng tiền</th>
+                            <th scope="col">Tình trạng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var x in Model)
+                        {
+                            <tr>
+                                <td>@x.OrderId</td>
+                                <td>@x.OrderDate.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                <td>@x.CustomerName</td>
+                                <td>@String.Format("{0:#,##0.##}", (x.Total))  đ</td>
+                                @if (x.Status == 1)
+                                {
+                                    <td class="text-primary">Đã đặt hàng</td>
+
+                                }else if(x.Status == 6)
+                                {
+                                    <td class="text-primary">Đơn hàng đã được xác nhận</td>
+                                }else if(x.Status == 2)
+                                {
+                                    <td class="text-primary">Đơn hàng đang được giao</td>
+                                }else if(x.Status == 3)
+                                {
+                                    <td class="text-primary">Giao thành công</td>
+                                }else if(x.Status == 4)
+                                {
+                                    <td class="text-primary">Đã Hủy</td>
+                                }
+                                else
+                                {
+                                    <td class="text-primary">Không hoạt động</td>
+                                    
+                                }
+                                <td><a asp-action="OrderDetailCustomer" asp-route-id="@x.OrderId" class="text-warning"><i class="fas fa-info"></i>Xem chi tiết</a></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+
+
+            </div>
+        </div>
+    </div>
+
+</div>

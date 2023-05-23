@@ -1,0 +1,189 @@
+﻿@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@model IPagedList<Category>
+<main>
+    <div class="container-fluid px-4">
+        <h1 class="mt-4">Danh mục</h1>
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-md-2">
+                        <button type="button" class="btn-success text-white p-2 " onclick="return onCreateCategory()">
+                            <i class="fas fa-plus-square"></i>
+                        </button>
+                    </div>
+                    <div class="col-md-4 ms-auto ">
+                        <form method="get" action="/Admin/Category/Index">
+                            <!-- Các trường dữ liệu của form -->
+
+                            <div class="input-group">                              
+                                <select class="form-select" id="status" name="status" style="margin-right:20px;">
+                                    <option value="-1">Tất cả</option>
+                                    <option value="1">Hoạt động</option>
+                                    <option value="0">Không hoạt động</option>
+                                </select>
+                                <input class="form-control border-end-0 border rounded-pill " type="search" name="searchQuery" placeholder="nhập tên danh mục để tìm" id="example-search-input">
+                                <span class="input-group-append">
+                                    <button class="btn btn-outline-light bg-primary border-bottom-0 border rounded-pill ms-n5" type="submit">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+                                </span>
+                            </div>
+                           
+                        </form>
+
+
+                       
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">Tên danh mục</th>
+                            <th scope="col">Trạng thái</th>
+                            <th scope="col">Chức năng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var category in Model)
+                        {
+                            <tr>
+                                @{
+                                    string trangthai = category.Status == 1 ? "Hoạt động" : "Không hoạt động";
+                                }
+                                <td>@category.CategoryName</td>
+                                <td>@trangthai</td>
+                                <td>
+                                    <button class="btn btn-primary" onclick="return oneditCategory('@category.CategoryName','@category.CategoryId')"><i class="fas fa-edit"></i></button>
+                                    <a type="submit" class="btn btn-danger" href="@Url.RouteUrl("areas", new {area="Admin" ,controller="Category" ,action="StatusFlag",id = category.CategoryId,page = ViewBag.PageNumber})"><i class="fas fa-sync-alt"></i></a>
+                                </td>
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                Trang @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+                @Html.PagedListPager(Model, page => Url.RouteUrl("areas", new {area ="Admin",controller ="Category",action="Index" ,page, searchQuery = ViewBag.SearchQuery, status = ViewBag.Status }), new PagedListRenderOptions { LiElementClasses = new string[] { "page-item" }, PageClasses = new string[] { "page-link" } })
+            </div>
+        </div>
+    </div>
+</main>
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="modalCategory" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="title_category">Thêm danh mục</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Tên danh mục</label>
+                    <input type="hidden" id="id_category" />
+                    <input type="text" class="form-control" id="name_category">
+                    <div id="name_category_mess" class="form-text text-danger"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+
+                <button type="button" class="btn btn-success" id="btn_addcategory">Thêm</button>
+                <button type="button" class="btn btn-success" id="btn_editcategory">Sửa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        $('#btn_addcategory').click(function () {
+            let namecategory = $('#name_category').val();
+        
+
+            $.ajax({
+                url: '/Admin/Category/Create',
+                type: 'POST',
+                data: {
+                    // Dữ liệu cần gửi đi
+                    nameCategory: $('#name_category').val()
+
+                },
+                success: function (data) {
+                    if (data == 1) {
+                        MessageSucces("Thêm thành công");
+                        setTimeout(function () {
+                            // Thực hiện hành động sau 2 giây
+                            location.reload();
+                        }, 500);
+                    } else if (data == 2) {
+                        MessageWarning("Tên danh mục đã tồn tại");
+                    } else {
+                        MessageWarning("Thêm thất bại");
+                    }
+                    // Xử lý dữ liệu trả về nếu có
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    MessageWarning("Thêm thất bại");
+                }
+            });
+        });
+        $('#btn_editcategory').click(function () {
+            let namecategory = $('#name_category').val();
+            let categoryId = $('#id_category').val();
+           
+            if (namecategory == "") {
+                $('#name_category_mess').text('Tên không thể để trống, hoặc tên không hợp lệ.')
+                return;
+            }
+
+            $.ajax({
+                url: '/Admin/Category/Update',
+                type: 'POST',
+                data: {
+                    // Dữ liệu cần gửi đi
+                    nameCategory: namecategory,
+                    categoryId: categoryId
+                },
+                success: function (data) {
+                    if (data == 1) {
+                        MessageSucces("Sửa thành công");
+                        setTimeout(function () {
+                            // Thực hiện hành động sau 2 giây
+                            location.reload();
+                        }, 500);
+                    } else if (data == 2) {
+                        MessageWarning("Tên danh mục đã tồn tại");
+                    } else {
+                        MessageWarning("Sửa thất bại");
+                    }
+                    // Xử lý dữ liệu trả về nếu có
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    MessageWarning("Sửa thất bại");
+                }
+            });
+        });
+    });
+    function oneditCategory(categoryName, categoryId) {
+        $('#btn_addcategory').hide();
+        $('#modalCategory').modal('show');
+        $('#id_category').val(categoryId);
+        $('#name_category').val(categoryName);
+        $('#title_category').text('Sửa danh mục - ' + categoryName);
+
+
+
+    }
+    function onCreateCategory() {
+
+        $('#btn_editcategory').hide();
+        $('#modalCategory').modal('show');
+
+    }
+</script>

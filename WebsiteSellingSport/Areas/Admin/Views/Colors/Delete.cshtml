@@ -1,0 +1,38 @@
+﻿@model WebsiteSellingSport.Models.Color
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<main>
+    <div class="container-fluid px-4">
+
+        <h3>Bạn có chắc chắn muốn xóa màu này?</h3>
+        <div>
+
+            <hr />
+            <dl class="row">
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.ColorName)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.ColorName)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.ColorCode)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.ColorCode)
+                </dd>
+            </dl>
+
+            <form href="@Url.RouteUrl("areas", new {area="Admin",controller="Colors",action="Delete" ,id = Model.ColorId})" method="post">
+
+                <button type="submit" class="btn btn-danger">Xóa</button>
+                |
+                <a href="@Url.RouteUrl("areas", new {area="Admin",controller="Colors",action="Index"})">Quay lại</a>
+            </form>
+        </div>
+    </div>
+
+</main>
